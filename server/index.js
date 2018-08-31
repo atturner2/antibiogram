@@ -30,12 +30,15 @@ var con = mysql.createConnection({
   port: 3306
 });
 
+
+
 app.use(session({
   key: "user_sid",
   secret: "antibiogramsecretkey",
   saveUninitialized: true,
   resave: false}
 ));
+
 
 app.listen(port, () => console.log('Example app listening on port ' + port));
 //Session-related code here
@@ -54,6 +57,8 @@ console.log('file sent')
 });
 
 app.post('/validateLoginDetails', function(req, res) {
+  console.log("session value when unset: ");
+  console.log(req.session.value);
   var user = req.body.User;
   var password = sha1(req.body.Password);
   var sqllogin = 'SELECT acc_username, acc_password FROM tbl_accounts WHERE acc_username = '
@@ -74,24 +79,40 @@ app.post('/validateLoginDetails', function(req, res) {
         if(result == '') {
           console.log('name and password wrong, back to the login page');
           res.redirect('/login');
-          throw err;
         }
         //found it you fucker
         else {
           console.log('user info correct');
-          req.session.user = user;
-          console.log('password');
+          req.session.value = user;
+          console.log("new session value");
+          console.log(req.session.value);
+        //  req.session.reset();
+          res.redirect('/mainpage');
+
         }
       });
     });
+    console.log("Session Value: ");
+    console.log(req.session.value);
+    console.log("UserID: ");
+    console.log(req.body.User);
+    console.log("sessionid: ");
+    console.log(req.sessionID);
     console.log("sending to mainpage");
-    res.redirect('/mainpage');
 
 });
 
 app.get('/mainpage', function(req, res) {
+  console.log("BEGINNING OF MAINPAGE");
+  console.log("sessionval: ");
+  console.log(req.session.value);
+  console.log("sessionuser: ");
+  console.log(req.body.User);
+  if(req.session.value == undefined) {
+    console.log("INVALID LOGIN");
+  }
 console.log('request for Log Page!');
 //res.send('Hello World!');
 res.sendFile(__dirname + '/html/mainpage.html');
-console.log('file sent')
+console.log('MAINPAGE FILE SENT');
 });
